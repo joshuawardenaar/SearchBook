@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html ; xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>The search for a good book</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.3.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+</head>
+<body>
+<div class="container">
+    <div class="row">
+        <div class="col-lg-6">
+            <h2>Let's find your books</h2>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-lg-6">
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                Search parameters
+            </div>
+            <div class="panel-body">
+                <div class="form-group">
+                    <label for="searchtext">Search text</label>
+                    <input class="form-control" id="searchtext" type="text"/>
+                </div>
+                <div class="form-select">
+                    <label for="selectlanguage">Choose language</label>
+                    <select class="form-control" id="selectlanguage">
+                    </select>
+                </div>
+            </div>
+            <div class="panel-footer">
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-lg-6">
+        <button class="btn btn-primary"
+                id="searchButton"
+                onclick="searchClick();"
+                type="button">Search book
+        </button>
+
+        <br>
+        <br>
+
+    </div>
+</div>
+<div class="row">
+    <div class="col-lg-6">
+        <table class="table table-bordered
+                  table-condensed table-striped"
+               id="booksTable">
+            <thead>
+            <tr>
+                <th>Title</th>
+                <th>Published-date</th>
+                <th>Authors</th>
+                <th>ISBN</th>
+                <th>Language</th>
+            </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+<script>
+    fillDropdown();
+    function fillDropdown() {
+        let dropdown = $('#selectlanguage');
+
+        dropdown.empty();
+
+        dropdown.append('<option selected="true" disabled>Choose Language</option>');
+        dropdown.prop('selectedIndex', 0);
+
+        const url = 'iso639-1-language.json';
+
+        $.getJSON(url, function (data) {
+            $.each(data, function (key, entry) {
+                dropdown.append($('<option></option>').attr('value', key).text(entry.name));
+            })
+        });
+    }
+
+    // Handle click event on search button
+    function searchClick() {
+        clearTable();
+        bookList();
+    }
+
+    //after each use delete table
+    function clearTable(table) {
+        $("#booksTable tbody tr").remove();
+    }
+
+    function bookList() {
+        // Call SearchBookAPI to get a list of Books
+
+        var searchText = $("#searchtext").val();
+
+        //Replace "spaces" with "plus" in request query
+        if (searchText != null) {
+            searchText = searchText.replaceAll(" ", "+");
+        }
+
+        var selectedLanguage = $("#selectlanguage").val();
+
+        $.ajax({
+            url: '/findBooksByText?searchText=' + searchText + "&searchLanguage=" + selectedLanguage,
+            type: 'GET',
+            dataType: 'json',
+            success: function (books) {
+                bookListSuccess(books);
+            },
+            error: function (request, message, error) {
+                handleException(request, message, error);
+            }
+        });
+    }
+
+    function bookListSuccess(books) {
+        // Iterate over the collection of data
+        $.each(books.items, function (index, book) {
+            // Add a row to the Product table
+            bookAddRow(book.volumeInfo);
+        });
+    }
+
+    function bookAddRow(book) {
+        // Check if <tbody> tag exists, add one if not
+        if ($("#booksTable tbody").length == 0) {
+            $("#booksTable").append("<tbody></tbody>");
+        }
+        // Append row to <table>
+        $("#booksTable tbody").append(
+            bookBuildTableRow(book));
+    }
+
+    function bookBuildTableRow(book) {
+
+        var bookAuthors = getBookAuthors(book.authors);
+        var ISBN = getISBN(book.industryIdentifiers);
+
+        var ret =
+            "<tr>" +
+            "<td>" + book.title + "</td>" +
+            "<td>" + book.formattedPublishedDate + "</td>" +
+            "<td>" + bookAuthors + "</td>" +
+            "<td>" + ISBN + "</td>" +
+            "<td>" + book.language + "</td>" +
+            "</tr>";
+
+        return ret;
+    }
+
+    function getBookAuthors(authors) {
+        var ret = null;
+
+        // Iterate over the authors
+        $.each(authors, function (index, author) {
+            // Add the author to the list
+            if (ret === null) {
+                ret = author;
+            } else {
+                ret = ret + ", " + author;
+            }
+        });
+
+        if (ret === null)
+            return ""; //no authors known
+        else
+            return ret;
+    }
+
+    function getISBN(industryIdentifiers) {
+        var ret = null;
+        // Iterate over the identifiers
+        $.each(industryIdentifiers, function (index, industryIdentifier) {
+            // Add a row to the Product table
+            if (industryIdentifier.type === "ISBN_13") {
+                ret = industryIdentifier.identifier;
+            }
+        });
+
+        if (ret === null)
+            return ""; //no ISBN_13 present
+        else
+            return ret;
+    }
+
+    function handleException(request, message, error) {
+        var msg = "";
+        msg += "Code: " + request.status + "\n";
+        msg += "Text: " + request.statusText + "\n";
+        if (request.responseJSON != null) {
+            msg += "Message: " + request.responseJSON.Message + "\n";
+        }
+        alert(msg);
+    }
+</script>
+</body>
+</html>
