@@ -4,7 +4,7 @@
 
 ### How to install  
 
-To install the project, mvn clean install should suffice.
+To install the project, "mvn clean install" should suffice. To start use "mvn spring-boot:run"
 
 ### The endpoint
 Once started the endpoint /findBooksByText should be available. 
