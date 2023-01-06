@@ -25,36 +25,33 @@ class VolumeInfoTest {
         VolumeInfo volumeInfo = new VolumeInfo();
         volumeInfo.setPublishedDate("1997");
         assertNotNull(volumeInfo.getPublishedDate());
-        assertTrue(volumeInfo.getPublishedDate().getYear() == 1997);
-        assertTrue(volumeInfo.getPublishedDate().getMonthValue() == 1);
-        assertTrue(volumeInfo.getPublishedDate().getDayOfMonth() == 1);
+        assertEquals(volumeInfo.getPublishedDate().getYear(), 1997);
+        assertEquals(volumeInfo.getPublishedDate().getMonthValue() , 1);
+        assertEquals(volumeInfo.getPublishedDate().getDayOfMonth() , 1);
     }
 
     @Test
     void setPublishedDateYearMonth() {
         VolumeInfo volumeInfo = new VolumeInfo();
-        volumeInfo = new VolumeInfo();
         volumeInfo.setPublishedDate("1997-11");
         assertNotNull(volumeInfo.getPublishedDate());
-        assertTrue(volumeInfo.getPublishedDate().getYear() == 1997);
-        assertTrue(volumeInfo.getPublishedDate().getMonthValue() == 11);
-        assertTrue(volumeInfo.getPublishedDate().getDayOfMonth() == 1);
+        assertEquals(volumeInfo.getPublishedDate().getYear() , 1997);
+        assertEquals(volumeInfo.getPublishedDate().getMonthValue() , 11);
+        assertEquals(volumeInfo.getPublishedDate().getDayOfMonth() , 1);
     }
 
     @Test
     void setPublishedDateYearMonthDay() {
         VolumeInfo volumeInfo = new VolumeInfo();
-        volumeInfo = new VolumeInfo();
         volumeInfo.setPublishedDate("1997-11-20");
-        assertTrue(volumeInfo.getPublishedDate().getYear() == 1997);
-        assertTrue(volumeInfo.getPublishedDate().getMonthValue() == 11);
-        assertTrue(volumeInfo.getPublishedDate().getDayOfMonth() == 20);
+        assertEquals(volumeInfo.getPublishedDate().getYear() , 1997);
+        assertEquals(volumeInfo.getPublishedDate().getMonthValue() , 11);
+        assertEquals(volumeInfo.getPublishedDate().getDayOfMonth() , 20);
     }
 
     @Test
     void setPublishedDateYearWrongFormat() {
         VolumeInfo volumeInfo = new VolumeInfo();
-        volumeInfo = new VolumeInfo();
         volumeInfo.setPublishedDate("Some kind of mess");
         assertNull(volumeInfo.getPublishedDate());
     }
