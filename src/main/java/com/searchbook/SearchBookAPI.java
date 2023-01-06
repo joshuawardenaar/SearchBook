@@ -1,20 +1,19 @@
 package com.searchbook;
 
-import com.searchbook.mappers.Items;
 import com.searchbook.mappers.VolumeList;
 import jakarta.validation.constraints.Size;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
-
-import java.util.Comparator;
+import org.springframework.web.server.ResponseStatusException;
 
 @SpringBootApplication
 @RestController
@@ -47,9 +46,9 @@ public class SearchBookAPI {
     }
 
     @GetMapping("/findBooksByText")
-    public VolumeList findBooksByText(@RequestParam(value = "searchText", defaultValue = "Bible") String searchText,
-                                      @Size(min = 2, max = 2, message = "Language should be two letters")
-                                      @RequestParam(value = "searchLanguage", defaultValue = "en") String searchLanguage) {
+    public VolumeList findBooksByText(@RequestParam(value = "searchText", defaultValue = "Bible") String searchText, @Size(min = 2, max = 2, message = "Language should be two letters") @RequestParam(value = "searchLanguage", defaultValue = "en") String searchLanguage) {
+
+        logger.info("findBooksByText - searchText: " + searchText + " and searchLanguage: " + searchLanguage);
 
         String uri = BASE_URI +
                 searchText.replaceAll(SPACE, ADD) + //Replace spaces with "+"
@@ -58,20 +57,21 @@ public class SearchBookAPI {
                 "&orderBy={orderBy}" +
                 "&key={key}";
 
+        logger.info("findBooksByText - The constructed uri with placeholders: " + uri);
+
         RestTemplate restTemplate = new RestTemplate();
 
-        ResponseEntity<VolumeList> response
-                = restTemplate.getForEntity(uri, VolumeList.class, searchLanguage, MAX_RESULTS, ORDER_BY, API_KEY);
+        ResponseEntity<VolumeList> response = restTemplate.getForEntity(uri, VolumeList.class, searchLanguage, MAX_RESULTS, ORDER_BY, API_KEY);
 
-        if (response.getBody().getItems() != null) {
-            response.getBody().getItems().sort(new Comparator<Items>() {
-                @Override
-                public int compare(Items item1, Items item2) {
-                    return item2.getVolumeInfo().getPublishedDate().compareTo(item1.getVolumeInfo().getPublishedDate());
-                }
-            });
+        try {
+            response.getBody().getItems().sort((item1, item2)
+                    -> item2.getVolumeInfo().getPublishedDate().compareTo(item1.getVolumeInfo().getPublishedDate()));
+        } catch (NullPointerException e) {
+            logger.error("There are no items found or some other error occurred. response.getBody().getItems() = null");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No (book) items found or some service error occurred \n");
         }
 
+        logger.info("returning: " + response.getBody());
         return response.getBody();
     }
 }
