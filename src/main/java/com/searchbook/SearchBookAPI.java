@@ -33,20 +33,10 @@ public class SearchBookAPI {
         SpringApplication.run(SearchBookAPI.class, args);
     }
 
-    @GetMapping("/hello")
-    public String sayHello(@RequestParam(value = "myName", defaultValue = "World") String name) {
-
-        logger.trace("A TRACE Message");
-        logger.debug("A DEBUG Message");
-        logger.info("An INFO Message");
-        logger.warn("A WARN Message");
-        logger.error("An ERROR Message");
-
-        return String.format("Hello %s!", name);
-    }
-
     @GetMapping("/findBooksByText")
-    public VolumeList findBooksByText(@RequestParam(value = "searchText", defaultValue = "Bible") String searchText, @Size(min = 2, max = 2, message = "Language should be two letters") @RequestParam(value = "searchLanguage", defaultValue = "en") String searchLanguage) {
+    public VolumeList findBooksByText(@RequestParam(value = "searchText", defaultValue = "Bible") String searchText,
+                                      @Size(min = 2, max = 2, message = "Language should be two letters")
+                                      @RequestParam(value = "searchLanguage", defaultValue = "en") String searchLanguage) {
 
         logger.info("findBooksByText - searchText: " + searchText + " and searchLanguage: " + searchLanguage);
 
@@ -71,7 +61,6 @@ public class SearchBookAPI {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No (book) items found or some service error occurred \n");
         }
 
-        logger.info("returning: " + response.getBody());
         return response.getBody();
     }
 }

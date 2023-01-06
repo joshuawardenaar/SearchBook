@@ -11,7 +11,6 @@ import java.util.List;
 @Getter
 @Setter
 public class VolumeInfo {
-
     private String title;
     private List<String> authors;
     private List<IndustryIdentifier> industryIdentifiers;
@@ -20,17 +19,24 @@ public class VolumeInfo {
     private LocalDate publishedDate;
 
     public void setPublishedDate(String publishedDate) {
-        try {
-            this.publishedDate = LocalDate.parse(createParsebleDateString(publishedDate));
-            formattedPublishedDate = this.publishedDate.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG));
-        } catch (Exception e) {
-            e.printStackTrace();
+
+        String strSimplePattern = "^\\d{4}(-\\d{2})?(-\\d{2})?$";
+        if (publishedDate != null && publishedDate.matches(strSimplePattern)) {
+            try {
+                this.publishedDate = LocalDate.parse(createParsebleDateString(publishedDate));
+                formattedPublishedDate = this.publishedDate.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
+    /*
+    Set month or day to 01, if none are given.
+     */
     private String createParsebleDateString(String date) {
+        //Input string matches "^\\d{4}(-\\d{2})?(-\\d{2})?$"; and is not null
         String[] dateParts;
-
         dateParts = date.split("-");
 
         if (dateParts.length == 2) {
